@@ -21,7 +21,7 @@ tools = [
     day_planner.assign_task_to_slot,
     day_planner.remove_time_slot,
     day_planner.get_scheduled_tasks,
-    day_planner.get_day_summary
+    day_planner.get_day_summary,
 ]
 
 if __name__ == "__main__":
