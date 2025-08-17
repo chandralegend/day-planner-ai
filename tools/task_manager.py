@@ -129,6 +129,9 @@ class TaskManager:
         """Get tasks with optional filtering."""
         filtered_tasks = self.tasks.copy()
 
+        if filter_criteria is not None and isinstance(filter_criteria, dict):
+            filter_criteria = TaskFilter(**filter_criteria)
+
         if filter_criteria:
             if filter_criteria.status:
                 filtered_tasks = [
@@ -170,6 +173,9 @@ class TaskManager:
         task = self.get_task_by_id(task_id)
         if not task:
             raise ValueError(f"Task with ID {task_id} not found")
+
+        if isinstance(updates, dict):
+            updates = TaskUpdate(**updates)
 
         # Update fields if provided
         update_data = updates.model_dump(exclude_unset=True)

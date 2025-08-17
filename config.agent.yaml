@@ -5,8 +5,144 @@ persona: |
   You take initiative by suggesting schedules based on pending tasks, while remaining flexible to adapt to the 
   user's preferences. You offer thoughtful suggestions for time management and follow up on task progress.
   You strike a perfect balance between efficiency and wellbeing by encouraging breaks and preventing overcommitment.
-start_step_id: greet
+start_step_id: greet_and_menu
 
+steps:
+  - id: greet_and_menu
+    desc: |-
+      Greet the user warmly and introduce yourself. Present the main menu options:
+      1. View today's schedule/dashboard
+      2. Manage tasks (add, view, edit, delete)
+      3. Create/adjust schedule
+      4. Track task progress
+      5. End conversation
+      
+      Ask what they would like to do.
+    paths:
+      - to: show_dashboard
+        when: user selects option 1 or wants to see current day plan or dashboard
+      - to: manage_tasks
+        when: user selects option 2 or wants to manage tasks
+      - to: create_schedule
+        when: user selects option 3 or wants to create/adjust a schedule
+      - to: track_progress
+        when: user selects option 4 or wants to track task progress
+      - to: goodbye
+        when: user selects option 5 or wants to end conversation
+
+  - id: show_dashboard
+    desc: |-
+      Show the user their current day plan including scheduled tasks and breaks.
+      Provide a summary of pending tasks and overall schedule.
+    tools:
+      - get_today_plan
+      - get_scheduled_tasks
+      - get_day_summary
+      - get_task_summary
+    paths:
+      - to: create_schedule
+        when: user wants to create or adjust schedule
+      - to: manage_tasks
+        when: user wants to manage tasks
+      - to: track_progress
+        when: user wants to update task progress
+      - to: greet_and_menu
+        when: user wants to return to menu
+
+  - id: manage_tasks
+    desc: |-
+      Handle all task management operations. Ask the user what they want to do:
+      - Add a new task: Request task name, description, priority, due date (optional), and estimated duration (optional)
+      - View tasks: Show all tasks with basic info or detailed information for a specific task
+      - Edit a task: Allow updating any task field
+      - Delete a task: Confirm deletion and remove the task
+      
+      Guide the user through their chosen operation with appropriate prompts and confirmations.
+    tools:
+      - get_tasks
+      - get_task_by_id
+      - get_task_summary
+      - create_task
+      - update_task
+      - delete_task
+    paths:
+      - to: create_schedule
+        when: user wants to create a schedule or update schedule after task changes
+      - to: show_dashboard
+        when: user wants to see the dashboard after making task changes
+      - to: track_progress
+        when: user wants to track progress after managing tasks
+      - to: greet_and_menu
+        when: user wants to return to menu
+
+  - id: create_schedule
+    desc: |-
+      Create or adjust a daily schedule for the user. Consider task priorities,
+      due dates, estimated durations, and include appropriate breaks.
+      If a schedule already exists, allow the user to adjust it.
+    tools:
+      - get_today_plan
+      - create_today_plan
+      - get_tasks
+      - add_time_slot
+      - assign_task_to_slot
+      - remove_time_slot
+    paths:
+      - to: show_dashboard
+        when: user wants to see the updated schedule
+      - to: track_progress
+        when: user wants to track progress on tasks
+      - to: manage_tasks
+        when: user wants to manage tasks after scheduling
+      - to: greet_and_menu
+        when: user wants to return to menu
+
+  - id: track_progress
+    desc: |-
+      Allow the user to update the status of scheduled tasks. Ask which task
+      they want to update and what the new status should be.
+    tools:
+      - get_scheduled_tasks
+      - get_task_by_id
+      - update_task
+    paths:
+      - to: recommend_adjustments
+        when: user updates task status to complete or skipped
+      - to: show_dashboard
+        when: user wants to see the updated schedule
+      - to: create_schedule
+        when: user wants to adjust the schedule
+      - to: manage_tasks
+        when: user wants to manage tasks
+      - to: greet_and_menu
+        when: user wants to return to menu
+
+  - id: recommend_adjustments
+    desc: |-
+      Based on task status updates, recommend adjustments to the schedule to optimize
+      the remainder of the day. Consider adding breaks after completed tasks or
+      rescheduling skipped tasks.
+    tools:
+      - get_scheduled_tasks
+      - get_tasks
+      - remove_time_slot
+      - add_time_slot
+      - assign_task_to_slot
+    paths:
+      - to: create_schedule
+        when: user accepts recommendations
+      - to: show_dashboard
+        when: user wants to see the current schedule
+      - to: greet_and_menu
+        when: user wants to return to menu
+
+  - id: goodbye
+    desc: |-
+      Thank the user for using the Day Planner Assistant and provide a brief summary
+      of what was accomplished. Offer encouragement for completing their tasks and
+      end the conversation.
+    tools:
+      - get_day_summary
 
 tools:
   tool_files:

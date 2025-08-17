@@ -15,7 +15,8 @@ tools = [
     task_manager.get_task_summary,
     # Day Planning Tools
     day_planner.add_time_slot,
-    day_planner.get_or_create_today_plan,
+    day_planner.get_today_plan,
+    day_planner.create_today_plan,
     day_planner.add_time_slot,
     day_planner.assign_task_to_slot,
     day_planner.remove_time_slot,
