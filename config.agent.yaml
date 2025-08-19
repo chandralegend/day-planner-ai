@@ -89,6 +89,7 @@ steps:
       - add_time_slot
       - assign_task_to_slot
       - remove_time_slot
+      - update_time_slot
     paths:
       - to: show_dashboard
         when: user wants to see the updated schedule
@@ -128,6 +129,7 @@ steps:
       - get_scheduled_tasks
       - get_tasks
       - remove_time_slot
+      - update_time_slot
       - add_time_slot
       - assign_task_to_slot
     paths:

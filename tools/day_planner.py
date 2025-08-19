@@ -213,3 +213,32 @@ class DayPlanner:
             "unscheduled_slots": total_slots - scheduled_slots,
             "notes": plan.notes,
         }
+
+    def update_time_slot(
+        self,
+        slot_index: int,
+        start_time: datetime,
+        end_time: datetime,
+        task_id: str,
+        notes: Optional[str] = None,
+    ) -> TimeSlot:
+        """Update an existing time slot in today's plan."""
+        plan = self.get_today_plan()
+        if not plan:
+            raise ValueError("No plan exists for today")
+
+        if slot_index >= len(plan.time_slots):
+            raise ValueError("Time slot index out of range")
+
+        # Validate task exists
+        if not self.task_manager.get_task_by_id(task_id):
+            raise ValueError(f"Task with ID {task_id} not found")
+
+        time_slot = TimeSlot(
+            start_time=start_time, end_time=end_time, task_id=task_id, notes=notes
+        )
+
+        plan.time_slots[slot_index] = time_slot
+        plan.updated_at = datetime.now()
+        self._save_plans()
+        return time_slot

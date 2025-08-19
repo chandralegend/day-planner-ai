@@ -20,6 +20,9 @@ class Task(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     title: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=1000)
+    tags: List[str] = Field(
+        default_factory=list, description="List of tags for categorization"
+    )
     status: Literal["pending", "in_progress", "completed"] = Field(default="pending")
     priority: int = Field(
         default=3,
@@ -52,6 +55,7 @@ class TaskFilter(BaseModel):
     min_priority: Optional[int] = Field(None, ge=1, le=5)
     max_priority: Optional[int] = Field(None, ge=1, le=5)
     has_due_date: Optional[bool] = None
+    tags: Optional[List[str]] = None
 
 
 class TaskUpdate(BaseModel):
@@ -60,6 +64,9 @@ class TaskUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=1000)
     status: Optional[Literal["pending", "in_progress", "completed"]] = None
+    tags: Optional[List[str]] = Field(
+        None, description="List of tags for categorization"
+    )
     priority: Optional[int] = Field(None, ge=1, le=5)
     estimate_hours: Optional[float] = Field(None, gt=0)
     due_date: Optional[str] = None
@@ -106,6 +113,7 @@ class TaskManager:
         title: str,
         description: Optional[str] = None,
         priority: int = 3,
+        tags: Optional[List[str]] = None,
         estimate_hours: Optional[float] = None,
         due_date: Optional[str] = None,
     ) -> Task:
@@ -114,6 +122,7 @@ class TaskManager:
             title=title,
             description=description,
             priority=priority,
+            tags=tags or [],
             estimate_hours=estimate_hours,
             due_date=due_date,
         )
@@ -139,7 +148,12 @@ class TaskManager:
                     for task in filtered_tasks
                     if task.status in filter_criteria.status
                 ]
-
+            if filter_criteria.tags:
+                filtered_tasks = [
+                    task
+                    for task in filtered_tasks
+                    if set(filter_criteria.tags).intersection(task.tags)
+                ]
             if filter_criteria.min_priority is not None:
                 filtered_tasks = [
                     task
