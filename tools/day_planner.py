@@ -12,7 +12,7 @@ from typing import List, Optional, Dict
 
 from pydantic import BaseModel, Field
 
-from tools.task_manager import Task, TaskManager
+from tools.task_manager import Task, TaskManager, TaskFilter
 
 
 class TimeSlot(BaseModel):
@@ -20,7 +20,7 @@ class TimeSlot(BaseModel):
 
     start_time: str = Field(..., description="Start time in HH:MM format")
     end_time: str = Field(..., description="End time in HH:MM format")
-    task_id: Optional[str] = None
+    task_id: str = Field(..., description="ID of the associated task")
     notes: Optional[str] = None
 
 
@@ -105,15 +105,20 @@ class DayPlanner:
         self,
         start_time: str,
         end_time: str,
-        task_id: Optional[str] = None,
+        task_id: str,
         notes: Optional[str] = None,
     ) -> TimeSlot:
         """Add a time slot to today's plan."""
         plan = self.get_or_create_today_plan()
 
         # Validate task exists if provided
-        if task_id and not self.task_manager.get_task_by_id(task_id):
-            raise ValueError(f"Task with ID {task_id} not found")
+        if not self.task_manager.get_task_by_id(task_id):
+            available_tasks = self.task_manager.get_tasks(
+                filter_criteria=TaskFilter(status=["Pending", "InProgress"])
+            )
+            raise ValueError(
+                f"Task with ID {task_id} not found, Available Pending and InProgress tasks are: {available_tasks}"
+            )
 
         time_slot = TimeSlot(
             start_time=start_time, end_time=end_time, task_id=task_id, notes=notes

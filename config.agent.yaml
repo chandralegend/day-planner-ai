@@ -84,6 +84,8 @@ steps:
       - get_today_plan
       - create_today_plan
       - get_tasks
+      - get_task_by_id
+      - create_task
       - add_time_slot
       - assign_task_to_slot
       - remove_time_slot
